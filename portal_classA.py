@@ -27,7 +27,7 @@ if os.path.exists(TARGET_DIR):
                 
                 # app.py が存在したらメニューに追加
                 if os.path.isfile(app_path):
-                    page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓")
+                    page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓", url_path=folder_name)
                     pages.append(page)
 
 # ページが1つでも見つかったら、ナビゲーションを作る

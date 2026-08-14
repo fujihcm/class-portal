@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import re  # 数字を抽出するために追加
 
 # 表紙の設定
 st.set_page_config(page_title="クラスB 課題ポータル", page_icon="🏫", layout="wide")
@@ -10,36 +11,38 @@ pages = []
 
 # フォルダが存在するかチェック
 if os.path.exists(TARGET_DIR):
-    # lesson01 の中にあるフォルダ（student_031 など）を順番に取得
     student_folders = sorted(os.listdir(TARGET_DIR))
     
     for folder_name in student_folders:
-        # app.py のパスを作る（例: lesson01/student_031/app.py）
-        app_path = os.path.join(TARGET_DIR, folder_name, "app.py")
+        # フォルダ名から数字部分だけを探して取り出す（例: "student_031" -> 31）
+        match = re.search(r'\d+', folder_name)
         
-        # もし app.py が存在したら、ポータルのメニュー（ページ）として登録する
-        if os.path.isfile(app_path):
-            # メニューに表示する名前を設定（例: 「🧑‍🎓 student_031」）
-            page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓")
-            pages.append(page)
+        if match:
+            student_num = int(match.group()) # 見つけた数字を整数（数値）に変換
+            
+            # 🎯 ここがクラスの振り分け条件！
+            # 学生番号が 51番 〜 100番 の場合のみ処理を続ける
+            if 51 <= student_num <= 100:
+                app_path = os.path.join(TARGET_DIR, folder_name, "app.py")
+                
+                # app.py が存在したらメニューに追加
+                if os.path.isfile(app_path):
+                    page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓", url_path=folder_name)
+                    pages.append(page)
 
-# ページが1つでも見つかったら、ナビゲーション（サイドバー）を作って実行
+# ページが1つでも見つかったら、ナビゲーションを作る
 if len(pages) > 0:
-    # --- ポータルの表紙となるページも一番上に作っておく ---
     def top_page():
         st.title("🌟 クラスB - Streamlit 課題ポータル")
-        st.write("左のメニューから、学生の作品を選んでプレビューできます。")
-        st.info("※ このポータルはGitHubのフォルダ構成から自動生成されています。")
+        st.write("左のメニューから、クラスB（出席番号51〜100）の学生の作品をプレビューできます。")
+        st.info("※ クラスA（1番〜50番）の学生は表示されません。")
         
     intro_page = st.Page(top_page, title="ホーム", icon="🏠", default=True)
-    
-    # ホーム画面 ＋ 学生のアプリ一覧 をメニューにセット
     all_pages = [intro_page] + pages
     
-    # ナビゲーションメニューを起動！
     pg = st.navigation(all_pages)
     pg.run()
     
 else:
     st.title("🌟 クラスB - Streamlit 課題ポータル")
-    st.warning(f"「{TARGET_DIR}」フォルダ内に、学生の app.py がまだ見つかりません。")
+    st.warning(f"「{TARGET_DIR}」フォルダ内に、クラスBの提出物がまだ見つかりません。")

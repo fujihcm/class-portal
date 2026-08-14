@@ -1,12 +1,23 @@
 import streamlit as st
 import os
-import re  # 数字を抽出するために追加
+import re
 
 # 表紙の設定
 st.set_page_config(page_title="総合アーカイブ 課題ポータル", page_icon="📚", layout="wide")
 
+# ＝右下の「Manage app」やフッターを非表示にするCSS＝
+hide_streamlit_style = """
+<style>
+.viewerBadge_container {
+    display: none !important;
+}
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 # 1. 授業回の選択（全回から選べるように設定）
-# ※授業が進むごとに教員がここを書き足してGitHubに保存（コミット）します
 lessons = {
     "lesson01": "第1回：はじめてのStreamlit",
     "lesson02": "第2回：グラフを描いてみよう",
@@ -22,7 +33,6 @@ def top_page():
 intro_page = st.Page(top_page, title="ホーム", icon="🏠", default=True)
 
 # st.navigationに渡す辞書（セクション分け用）
-# キーがセクション名、値がページのリストになります
 nav_dict = {"ホーム": [intro_page]}
 
 # 各授業回のディレクトリを順番にチェック
@@ -34,20 +44,21 @@ for target_dir, lesson_title in lessons.items():
         student_folders = sorted(os.listdir(target_dir))
         
         for folder_name in student_folders:
-            # フォルダ名から数字部分だけを探して取り出す（例: "student_031" -> 31）
+            # フォルダ名から数字部分だけを探して取り出す
             match = re.search(r'\d+', folder_name)
             
             if match:
                 student_num = int(match.group())
                 
-                # 🎯 ここがクラスの振り分け条件！
                 # アーカイブ用なので、クラスA・B全員（1番 〜 100番）を対象にする
                 if 1 <= student_num <= 100:
                     app_path = os.path.join(target_dir, folder_name, "app.py")
                     
                     # app.py が存在したらメニューに追加
                     if os.path.isfile(app_path):
-                        page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓")
+                        # 🎯 【重要】授業回と学生番号を組み合わせて、一意なURLパスを指定する
+                        unique_url = f"{target_dir}_{folder_name}"
+                        page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓", url_path=unique_url)
                         pages.append(page)
     
     # その授業回に1件でも提出ファイルが見つかった場合のみ、メニューのセクションとして追加

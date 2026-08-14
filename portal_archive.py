@@ -5,18 +5,6 @@ import re
 # 表紙の設定
 st.set_page_config(page_title="総合アーカイブ 課題ポータル", page_icon="📚", layout="wide")
 
-# ＝右下の「Manage app」やフッターを非表示にするCSS＝
-hide_streamlit_style = """
-<style>
-.viewerBadge_container {
-    display: none !important;
-}
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-</style>
-"""
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
 # 1. 授業回の選択（全回から選べるように設定）
 lessons = {
     "lesson01": "第1回：はじめてのStreamlit",

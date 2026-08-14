@@ -1,2 +1,1 @@
-import streamlit as st
-st.title("はじめてのStreamlitアプリ 🚀")
+print("hello world")

@@ -1,48 +1,75 @@
-import streamlit as st
 import os
-import re  # 数字を抽出するために追加
+import re
+import streamlit as st
+
+# 🎯 【教員設定】ポータルの公開フラグ（True: 通常公開 / False: 一時停止中）
+PORTAL_ACTIVE = True
+
+# 一時停止中の処理
+if not PORTAL_ACTIVE:
+    st.set_page_config(page_title="授業ポータル - 一時停止中", page_icon="🛑")
+    st.warning(
+        "現在、課題ポータルは一時休止中です。次回の授業時間内にお開きください。"
+    )
+    st.stop()
 
 # 表紙の設定
 st.set_page_config(page_title="クラスB 課題ポータル", page_icon="🏫", layout="wide")
 
-# ディレクトリの設定（今回は lesson01 を対象にする）
+# ディレクトリの設定（対象の授業回フォルダ）
 TARGET_DIR = "lesson01"
 pages = []
 
 # フォルダが存在するかチェック
 if os.path.exists(TARGET_DIR):
-    student_folders = sorted(os.listdir(TARGET_DIR))
-    
-    for folder_name in student_folders:
-        # フォルダ名から数字部分だけを探して取り出す（例: "student_031" -> 31）
-        match = re.search(r'\d+', folder_name)
-        
+    files = sorted(os.listdir(TARGET_DIR))
+
+    for file_name in files:
+        # ① .py 以外のファイル（隠しファイル等）を除外
+        if not file_name.endswith(".py"):
+            continue
+
+        # ② ファイル名の先頭にある出席番号を取り出す（例: "031_lesson01.py" -> 31）
+        match = re.match(r"^(\d+)", file_name)
+
         if match:
-            student_num = int(match.group()) # 見つけた数字を整数（数値）に変換
-            
-            # 🎯 ここがクラスの振り分け条件！
-            # 学生番号が 51番 〜 100番 の場合のみ処理を続ける
+            student_num = int(match.group(1))
+
+            # 🎯 クラスBの振り分け条件（出席番号 1番 〜 50番）
             if 51 <= student_num <= 100:
-                app_path = os.path.join(TARGET_DIR, folder_name, "app.py")
-                
-                # app.py が存在したらメニューに追加
+                app_path = os.path.join(TARGET_DIR, file_name)
+
+                # ③ サイドバー表示名（student_031 形式）と URLパス（031_lesson01 形式）を生成
+                title_name = f"student_{student_num:03d}"
+                url_path_name = os.path.splitext(file_name)[0]
+
                 if os.path.isfile(app_path):
-                    page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓", url_path=folder_name)
+                    page = st.Page(
+                        app_path,
+                        title=title_name,
+                        icon="🧑‍🎓",
+                        url_path=url_path_name,
+                    )
                     pages.append(page)
 
-# ページが1つでも見つかったら、ナビゲーションを作る
+# ページが見つかったらナビゲーションを生成
 if len(pages) > 0:
+
     def top_page():
         st.title("🌟 クラスB - Streamlit 課題ポータル")
-        st.write("左のメニューから、クラスB（出席番号51〜100）の学生の作品をプレビューできます。")
-        st.info("※ クラスA（1番〜50番）の学生は表示されません。")
-        
+        st.write(
+            "左のメニューから、クラスB（学生番号51〜100）の学生の作品をプレビューできます。"
+        )
+        st.info("※ クラスA（～50番）の学生は表示されません。")
+
     intro_page = st.Page(top_page, title="ホーム", icon="🏠", default=True)
     all_pages = [intro_page] + pages
-    
+
     pg = st.navigation(all_pages)
     pg.run()
-    
+
 else:
     st.title("🌟 クラスB - Streamlit 課題ポータル")
-    st.warning(f"「{TARGET_DIR}」フォルダ内に、クラスBの提出物がまだ見つかりません。")
+    st.warning(
+        f"「{TARGET_DIR}」フォルダ内に、クラスAの提出物がまだ見つかりません。"
+    )

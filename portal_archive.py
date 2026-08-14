@@ -1,45 +1,38 @@
 import streamlit as st
-import os
+import os, sys, importlib.util
 
-st.set_page_config(page_title="課題アーカイブ", page_icon="🗄️", layout="wide")
+st.set_page_config(page_title="【総合アーカイブ】ポータル", layout="wide")
+st.title("📚 【総合アーカイブ】 学生アプリ 確認ポータル")
 
-ARCHIVE_DIR = "archive"
+# 1. 授業回の選択（全回から選べる）
+lessons = {
+    "lesson01": "第1回：はじめてのStreamlit",
+    "lesson02": "第2回：グラフを描いてみよう",
+    "lesson03": "第3回：入力フォームを使おう"
+}
+selected_lesson = st.sidebar.selectbox("授業回を選んでください", options=list(lessons.keys()), format_func=lambda x: lessons[x])
 
-# ==========================================
-# 🔓 【教員用・公開設定】
-# 公開したい授業回のフォルダ名をここに手動で追加してください。
-# ここにリストアップされた回だけが、アーカイブポータルに表示されます。
-# ==========================================
-PUBLISHED_LESSONS = [
-    "lesson01",
-    # "lesson02",  # 公開準備ができたらコメントアウトを外す
-    # "lesson03",
-]
+# 2. 全学生の選択（1〜100番まで全て）
+students = {f"student_{i:03d}": f"学生番号 {i:03d} 番" for i in range(1, 101)}
+selected_student = st.sidebar.selectbox("学生を選んでください", options=list(students.keys()), format_func=lambda x: students[x])
 
-def archive_top():
-    st.title("🗄️ 課題アーカイブ（過去の作品）")
-    st.write("これまでに終了した、公開許可済みの授業回を閲覧できます。")
-    if PUBLISHED_LESSONS:
-        st.info(f"現在公開中の回: {', '.join(PUBLISHED_LESSONS)}")
-    else:
-        st.warning("現在公開されているアーカイブはありません。")
+target_app_path = os.path.join(selected_lesson, selected_student, "app.py")
 
-pages = [st.Page(archive_top, title="アーカイブTOP", icon="🏠", default=True)]
+if os.path.exists(target_app_path):
+    st.success(f"実行中: 【{lessons[selected_lesson]}】 {students[selected_student]}")
+    st.divider()
+    
+    sys.path.insert(0, os.path.abspath(os.path.join(selected_lesson, selected_student)))
+    if "student_app" in sys.modules:
+        del sys.modules["student_app"]
+    try:
+        spec = importlib.util.spec_from_file_location("student_app", target_app_path)
+        student_app = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(student_app)
+    except Exception as e:
+        st.error(f"エラーが発生しました: {e}")
+    finally:
+        sys.path.pop(0)
+else:
+    st.info("📌 この回の提出ファイルはまだ同期されていません。")
 
-# アーカイブフォルダが存在する場合のみ処理
-if os.path.exists(ARCHIVE_DIR):
-    # 教員が公開設定（リストに登録）した授業回だけをループする
-    for lesson in PUBLISHED_LESSONS:
-        lesson_path = os.path.join(ARCHIVE_DIR, lesson)
-        
-        if os.path.isdir(lesson_path):
-            # 該当レッスン内の学生フォルダを走査
-            for student in sorted(os.listdir(lesson_path)):
-                app_path = os.path.join(lesson_path, student, "app.py")
-                
-                if os.path.isfile(app_path):
-                    # 例: LESSON01 - student_031
-                    pages.append(st.Page(app_path, title=f"{lesson.upper()} - {student}", icon="📂"))
-
-pg = st.navigation(pages)
-pg.run()

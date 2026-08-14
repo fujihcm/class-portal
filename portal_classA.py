@@ -1,38 +1,45 @@
 import streamlit as st
-import os, sys, importlib.util
+import os
 
-st.set_page_config(page_title="【クラスA】ポータル", layout="wide")
-st.title("🖥️ 【クラスA】 動作確認ポータル")
-st.sidebar.markdown("[🔗 アーカイブ用ページへ](アーカイブ用のURLを記載)")
+# 表紙の設定
+st.set_page_config(page_title="クラスA 課題ポータル", page_icon="🏫", layout="wide")
 
-# ================================
-# 設定（授業ごとにここを書き換えてGitHubにPush）
-TARGET_LESSON = "lesson01"
-# ================================
+# ディレクトリの設定（今回は lesson01 を対象にする）
+TARGET_DIR = "lesson01"
+pages = []
 
-st.sidebar.markdown(f"**現在の対象: {TARGET_LESSON}**")
-
-# クラスAの学生番号（例: 001〜050）
-students = {f"student_{i:03d}": f"学生番号 {i:03d} 番" for i in range(1, 51)}
-selected_student = st.sidebar.selectbox("学生を選んでください", options=list(students.keys()), format_func=lambda x: students[x])
-
-target_app_path = os.path.join(TARGET_LESSON, selected_student, "app.py")
-
-if os.path.exists(target_app_path):
-    st.success(f"実行中: {students[selected_student]} のアプリ")
-    st.divider()
+# フォルダが存在するかチェック
+if os.path.exists(TARGET_DIR):
+    # lesson01 の中にあるフォルダ（student_031 など）を順番に取得
+    student_folders = sorted(os.listdir(TARGET_DIR))
     
-    # 動的にアプリを読み込んで実行
-    sys.path.insert(0, os.path.abspath(os.path.join(TARGET_LESSON, selected_student)))
-    if "student_app" in sys.modules:
-        del sys.modules["student_app"] # キャッシュクリア
-    try:
-        spec = importlib.util.spec_from_file_location("student_app", target_app_path)
-        student_app = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(student_app)
-    except Exception as e:
-        st.error(f"エラーが発生しました: {e}")
-    finally:
-        sys.path.pop(0)
+    for folder_name in student_folders:
+        # app.py のパスを作る（例: lesson01/student_031/app.py）
+        app_path = os.path.join(TARGET_DIR, folder_name, "app.py")
+        
+        # もし app.py が存在したら、ポータルのメニュー（ページ）として登録する
+        if os.path.isfile(app_path):
+            # メニューに表示する名前を設定（例: 「🧑‍🎓 student_031」）
+            page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓")
+            pages.append(page)
+
+# ページが1つでも見つかったら、ナビゲーション（サイドバー）を作って実行
+if len(pages) > 0:
+    # --- ポータルの表紙となるページも一番上に作っておく ---
+    def top_page():
+        st.title("🌟 クラスA - Streamlit 課題ポータル")
+        st.write("左のメニューから、学生の作品を選んでプレビューできます。")
+        st.info("※ このポータルはGitHubのフォルダ構成から自動生成されています。")
+        
+    intro_page = st.Page(top_page, title="ホーム", icon="🏠", default=True)
+    
+    # ホーム画面 ＋ 学生のアプリ一覧 をメニューにセット
+    all_pages = [intro_page] + pages
+    
+    # ナビゲーションメニューを起動！
+    pg = st.navigation(all_pages)
+    pg.run()
+    
 else:
-    st.info("📌 まだ提出されていないか、同期されていません。")
+    st.title("🌟 クラスA - Streamlit 課題ポータル")
+    st.warning(f"「{TARGET_DIR}」フォルダ内に、学生の app.py がまだ見つかりません。")

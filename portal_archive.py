@@ -1,38 +1,59 @@
 import streamlit as st
-import os, sys, importlib.util
+import os
+import re  # 数字を抽出するために追加
 
-st.set_page_config(page_title="【総合アーカイブ】ポータル", layout="wide")
-st.title("📚 【総合アーカイブ】 学生アプリ 確認ポータル")
+# 表紙の設定
+st.set_page_config(page_title="総合アーカイブ 課題ポータル", page_icon="📚", layout="wide")
 
-# 1. 授業回の選択（全回から選べる）
+# 1. 授業回の選択（全回から選べるように設定）
+# ※授業が進むごとに教員がここを書き足してGitHubに保存（コミット）します
 lessons = {
     "lesson01": "第1回：はじめてのStreamlit",
     "lesson02": "第2回：グラフを描いてみよう",
     "lesson03": "第3回：入力フォームを使おう"
 }
-selected_lesson = st.sidebar.selectbox("授業回を選んでください", options=list(lessons.keys()), format_func=lambda x: lessons[x])
 
-# 2. 全学生の選択（1〜100番まで全て）
-students = {f"student_{i:03d}": f"学生番号 {i:03d} 番" for i in range(1, 101)}
-selected_student = st.sidebar.selectbox("学生を選んでください", options=list(students.keys()), format_func=lambda x: students[x])
+def top_page():
+    st.title("📚 総合アーカイブ - Streamlit 課題ポータル")
+    st.write("左のメニューの各授業回セクションから、全クラスの学生の作品をプレビューできます。")
+    st.info("※ 提出済みの学生のファイルのみが自動的にリストアップされます。")
 
-target_app_path = os.path.join(selected_lesson, selected_student, "app.py")
+# ホームページの設定
+intro_page = st.Page(top_page, title="ホーム", icon="🏠", default=True)
 
-if os.path.exists(target_app_path):
-    st.success(f"実行中: 【{lessons[selected_lesson]}】 {students[selected_student]}")
-    st.divider()
+# st.navigationに渡す辞書（セクション分け用）
+# キーがセクション名、値がページのリストになります
+nav_dict = {"ホーム": [intro_page]}
+
+# 各授業回のディレクトリを順番にチェック
+for target_dir, lesson_title in lessons.items():
+    pages = []
     
-    sys.path.insert(0, os.path.abspath(os.path.join(selected_lesson, selected_student)))
-    if "student_app" in sys.modules:
-        del sys.modules["student_app"]
-    try:
-        spec = importlib.util.spec_from_file_location("student_app", target_app_path)
-        student_app = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(student_app)
-    except Exception as e:
-        st.error(f"エラーが発生しました: {e}")
-    finally:
-        sys.path.pop(0)
-else:
-    st.info("📌 この回の提出ファイルはまだ同期されていません。")
+    # フォルダが存在するかチェック
+    if os.path.exists(target_dir):
+        student_folders = sorted(os.listdir(target_dir))
+        
+        for folder_name in student_folders:
+            # フォルダ名から数字部分だけを探して取り出す（例: "student_031" -> 31）
+            match = re.search(r'\d+', folder_name)
+            
+            if match:
+                student_num = int(match.group())
+                
+                # 🎯 ここがクラスの振り分け条件！
+                # アーカイブ用なので、クラスA・B全員（1番 〜 100番）を対象にする
+                if 1 <= student_num <= 100:
+                    app_path = os.path.join(target_dir, folder_name, "app.py")
+                    
+                    # app.py が存在したらメニューに追加
+                    if os.path.isfile(app_path):
+                        page = st.Page(app_path, title=f"{folder_name}", icon="🧑‍🎓")
+                        pages.append(page)
+    
+    # その授業回に1件でも提出ファイルが見つかった場合のみ、メニューのセクションとして追加
+    if len(pages) > 0:
+        nav_dict[lesson_title] = pages
 
+# ナビゲーションの構築と実行
+pg = st.navigation(nav_dict)
+pg.run()

@@ -3,7 +3,7 @@ import os
 import re  # 数字を抽出するために追加
 
 # 🎯 【教員設定】ポータルの公開フラグ（True: 通常公開 / False: 一時停止中）
-PORTAL_ACTIVE = False
+PORTAL_ACTIVE = True
 
 # 一時停止中の処理
 if not PORTAL_ACTIVE:

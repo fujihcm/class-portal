@@ -1,19 +1,25 @@
 import os
 import re
 import streamlit as st
-import streamlit as st
 
 st.markdown(
     """
     <style>
-    /* ヘッダー全体（ユーザー名、アイコン、右上のメニューなど）を完全に非表示 */
+    /* 1. 右上のヘッダー（アイコンやメニュー）を完全に非表示 */
     [data-testid="stHeader"] {
         display: none !important;
     }
-    
-    /* 画面下の「Made with Streamlit」を非表示 */
+
+    /* 2. 右下のユーザー名（作成者バッジ）や管理ツールバーを完全に非表示 */
+    [data-testid="stAppViewerToolbar"],
+    div[class*="stAppViewerToolbar"] {
+        display: none !important;
+    }
+
+    /* 3. 画面下のフッター（Made with Streamlitなど）を非表示 */
     footer {
         visibility: hidden !important;
+        display: none !important;
     }
     </style>
     """,

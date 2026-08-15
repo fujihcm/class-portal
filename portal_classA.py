@@ -3,7 +3,7 @@ import re
 import streamlit as st
 
 # 🎯 【教員設定】ポータルの公開フラグ（True: 通常公開 / False: 一時停止中）
-PORTAL_ACTIVE = True
+PORTAL_ACTIVE = False
 
 # 一時停止中の処理
 if not PORTAL_ACTIVE:

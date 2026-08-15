@@ -14,19 +14,6 @@ st.markdown(
     footer {
         display: none !important;
     }
-
-    /* 3. 「Crafted by」「Manage app」などのツールバー・バッジを徹底的に非表示 */
-    [data-testid="stAppCreatorBadge"],
-    [data-testid="stAppHostedByBadge"],
-    [data-testid="stAppToolbar"],
-    [data-testid="stToolbar"],
-    [data-testid="stStatusWidget"],
-    .viewerBadge_container,
-    .viewerBadge_link,
-    div[class*="viewerBadge"],
-    div[class*="stAppViewerToolbar"] {
-        display: none !important;
-    }
     </style>
     """,
     unsafe_allow_html=True

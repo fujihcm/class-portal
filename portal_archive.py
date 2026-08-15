@@ -1,16 +1,6 @@
 import os
 import re
 import streamlit as st
-st.markdown(
-    """
-    <style>
-    [data-testid="stHeader"] {
-        display: none !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # 表紙の設定
 st.set_page_config(

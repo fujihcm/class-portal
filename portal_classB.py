@@ -2,19 +2,8 @@ import os
 import re
 import streamlit as st
 
-st.markdown(
-    """
-    <style>
-    [data-testid="stHeader"] {
-        display: none !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # 🎯 【教員設定】ポータルの公開フラグ（True: 通常公開 / False: 一時停止中）
-PORTAL_ACTIVE = True
+PORTAL_ACTIVE = False
 
 # 一時停止中の処理
 if not PORTAL_ACTIVE:

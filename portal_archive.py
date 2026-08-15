@@ -1,16 +1,28 @@
 import os
 import re
 import streamlit as st
+import streamlit.components.v1 as components
 
+# 翻訳ポップアップを非表示
+components.html(
+    """
+    <script>
+    window.parent.document.documentElement.lang = 'ja';
+    const meta = window.parent.document.createElement('meta');
+    meta.name = 'google';
+    meta.content = 'notranslate';
+    window.parent.document.head.appendChild(meta);
+    </script>
+    """,
+    width=0,
+    height=0
+)
 st.markdown(
     """
     <style>
-    /* 1. 右上のヘッダー（アイコンやメニュー）を非表示 */
     [data-testid="stHeader"] {
         display: none !important;
     }
-
-    /* 2. 画面下のフッターを非表示 */
     footer {
         display: none !important;
     }

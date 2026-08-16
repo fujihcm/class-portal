@@ -66,7 +66,8 @@ def create_student_page(student_title, target_app_path):
             code = f.read()
 
         # カラムを [左：右] = [3：1] の割合で分割
-        col1, col2 = st.columns([3, 1])
+        # col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3, 1], vertical_alignment="center")
         with col1:
             st.write(f"**🧑‍🎓 {student_title} の作品**")
         with col2:

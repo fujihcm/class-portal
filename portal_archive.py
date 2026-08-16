@@ -9,15 +9,24 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* 画面全体の上下の余白（パディング）を極限まで減らす */
+    /* 1. 画面全体の上下のパディングを減らす */
     .block-container {
-        padding-top: 2rem !important; /* デフォルトは6rem。1remにするとさらに上に詰まります */
+        padding-top: 2rem !important;
         padding-bottom: 1rem !important;
+    }    
+    /* 2. st.divider()（区切り線）の上下の余白を極限まで削る */
+    hr {
+        margin-top: 0.5rem !important;
+        margin-bottom: 1rem !important;
     }
-    /* ヘッダー周りのマージンを詰める */
-    h1, h2, h3 {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
+    /* 3. st.write() や トグルスイッチ周りの無駄な段落マージンを消す */
+    .stMarkdown p {
+        margin-bottom: 0 !important;
+    }
+    /* 4. カラム内の要素の下余白を詰める */
+    [data-testid="column"] > div {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)

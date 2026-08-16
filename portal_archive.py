@@ -33,7 +33,6 @@ nav_dict = {"ホーム": [intro_page]}
 # ==========================================
 def create_student_page(student_title, target_app_path):
     def render_page():
-        st.subheader(f"🧑‍🎓 {student_title} の作品", anchor=False)
         tab1, tab2 = st.tabs(["🚀 アプリ", "💻 ソースコード"])
         
         # ソースコードの読み込み

@@ -33,28 +33,31 @@ nav_dict = {"ホーム": [intro_page]}
 # ==========================================
 def create_student_page(student_title, target_app_path):
     def render_page():
-        tab1, tab2 = st.tabs(["🚀 アプリ", "💻 ソースコード"])
-        
-        # ソースコードの読み込み
+        # コードの読み込み
         with open(target_app_path, "r", encoding="utf-8") as f:
             code = f.read()
 
-        # 【タブ1】 アプリの実行
-        with tab1:
+        # カラムを [左：右] = [3：1] の割合で分割
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"**🧑‍🎓 {student_title} の作品**")
+        with col2:
+            # 右上にスイッチを配置
+            show_code = st.toggle("💻 ソースコード")
+
+        st.divider() # 区切り線
+
+        if show_code:
+            # スイッチON：コードを表示
+            st.code(code, language="python")
+        else:
+            # スイッチOFF：アプリを実行
+            safe_code = re.sub(r'st\.set_page_config\(.*?\)', '# disabled', code, flags=re.DOTALL)
             try:
-                # ※ st.set_page_configが複数回呼ばれるとエラーになるため、
-                # 学生のコード内に含まれていた場合は無効化(コメントアウト)して実行する安全対策
-                safe_code = re.sub(r'st\.set_page_config\(.*?\)', '# st.set_page_config (disabled)', code, flags=re.DOTALL)
-                
-                # exec() を使うと、現在のタブ(tab1)の中に学生のアプリがレンダリングされます
                 exec(safe_code, {"__name__": "__main__", "st": st})
             except Exception as e:
-                st.error(f"アプリの実行中にエラーが発生しました: {e}")
-
-        # 【タブ2】 ソースコードの表示
-        with tab2:
-            st.code(code, language="python")
-            
+                st.error(f"エラー: {e}")
+                
     return render_page
 # ==========================================
 

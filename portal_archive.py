@@ -14,7 +14,6 @@ lessons = {
     "lesson03": "第3回：入力フォームを使おう",
 }
 
-
 def top_page():
     st.title("📚 総合アーカイブ - Streamlit 課題ポータル")
     st.write(
@@ -22,12 +21,44 @@ def top_page():
     )
     st.info("※ 提出済みの学生のファイルのみが自動的にリストアップされます。")
 
-
 # ホームページの設定
 intro_page = st.Page(top_page, title="ホーム", icon="🏠", default=True)
 
 # st.navigationに渡す辞書（セクション分け用）
 nav_dict = {"ホーム": [intro_page]}
+
+
+# ==========================================
+# 🌟 追加：学生のページを描画する関数（タブと実行機能）
+# ==========================================
+def create_student_page(student_title, target_app_path):
+    def render_page():
+        st.title(f"🧑‍🎓 {student_title} の作品")
+        tab1, tab2 = st.tabs(["🚀 アプリ", "💻 ソースコード"])
+        
+        # ソースコードの読み込み
+        with open(target_app_path, "r", encoding="utf-8") as f:
+            code = f.read()
+
+        # 【タブ1】 アプリの実行
+        with tab1:
+            try:
+                # ※ st.set_page_configが複数回呼ばれるとエラーになるため、
+                # 学生のコード内に含まれていた場合は無効化(コメントアウト)して実行する安全対策
+                safe_code = re.sub(r'st\.set_page_config\(.*?\)', '# st.set_page_config (disabled)', code, flags=re.DOTALL)
+                
+                # exec() を使うと、現在のタブ(tab1)の中に学生のアプリがレンダリングされます
+                exec(safe_code, {"__name__": "__main__", "st": st})
+            except Exception as e:
+                st.error(f"アプリの実行中にエラーが発生しました: {e}")
+
+        # 【タブ2】 ソースコードの表示
+        with tab2:
+            st.code(code, language="python")
+            
+    return render_page
+# ==========================================
+
 
 # 各授業回のディレクトリを順番にチェック
 for target_dir, lesson_title in lessons.items():
@@ -42,7 +73,7 @@ for target_dir, lesson_title in lessons.items():
             if not file_name.endswith(".py"):
                 continue
 
-            # ② ファイル名の先頭にある出席番号を取り出す（例: "031_lesson01.py" -> 31）
+            # ② ファイル名の先頭にある出席番号を取り出す
             match = re.match(r"^(\d+)", file_name)
 
             if match:
@@ -52,20 +83,23 @@ for target_dir, lesson_title in lessons.items():
                 if 1 <= student_num <= 100:
                     app_path = os.path.join(target_dir, file_name)
 
-                    # ③ サイドバー表示名（student_031 形式）と URLパス（031_lesson01 形式）を生成
+                    # ③ サイドバー表示名と URLパスを生成
                     title_name = f"student_{student_num:03d}"
                     url_path_name = os.path.splitext(file_name)[0]
 
                     if os.path.isfile(app_path):
+                        # 🌟 変更点：ファイルパスではなく、描画関数を生成して渡す
+                        page_func = create_student_page(title_name, app_path)
+                        
                         page = st.Page(
-                            app_path,
+                            page_func,  # <- 関数を渡す
                             title=title_name,
                             icon="🧑‍🎓",
                             url_path=url_path_name,
                         )
                         pages.append(page)
 
-    # その授業回に1件でも提出ファイルが見つかった場合のみ、メニューのセクションとして追加
+    # その授業回に1件でも提出ファイルが見つかった場合のみ追加
     if len(pages) > 0:
         nav_dict[lesson_title] = pages
 

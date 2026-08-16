@@ -7,6 +7,21 @@ st.set_page_config(
     page_title="総合アーカイブ 課題ポータル", page_icon="📚", layout="wide"
 )
 
+st.markdown("""
+<style>
+    /* 画面全体の上下の余白（パディング）を極限まで減らす */
+    .block-container {
+        padding-top: 2rem !important; /* デフォルトは6rem。1remにするとさらに上に詰まります */
+        padding-bottom: 1rem !important;
+    }
+    /* ヘッダー周りのマージンを詰める */
+    h1, h2, h3 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # 1. 授業回の選択（全回から選べるように設定）
 lessons = {
     "lesson01": "第1回：はじめてのStreamlit",
@@ -43,7 +58,7 @@ def create_student_page(student_title, target_app_path):
             st.write(f"**🧑‍🎓 {student_title} の作品**")
         with col2:
             # 右上にスイッチを配置
-            show_code = st.toggle("💻 ソースコード")
+            show_code = st.toggle("💻 ソース")
 
         st.divider() # 区切り線
 

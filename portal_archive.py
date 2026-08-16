@@ -9,24 +9,28 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* 1. 画面全体の上下のパディングを減らす */
+    /* 1. 画面全体の上下のパディングを適度に減らす（システムツールバーを避けるため4rem） */
     .block-container {
-        padding-top: 2rem !important;
+        padding-top: 4rem !important; /* 前回の2remから4remに増やして隠れるのを防ぐ */
         padding-bottom: 1rem !important;
-    }    
-    /* 2. st.divider()（区切り線）の上下の余白を極限まで削る */
+    }
+    /* 2. カラム全体の垂直配置を中央揃えにする */
+    [data-testid="column"] {
+        display: flex;
+        align-items: center; /* これでタイトルとスイッチの高さが完璧に揃います */
+    }
+    /* 3. タイトル（左カラム）の上下余白をゼロにして正確に配置する */
+    [data-testid="column"] > div.stMarkdown,
+    [data-testid="column"] > div.stMarkdown p {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    /* 4. st.divider()（区切り線）の上下の余白を極限まで削る（前回と同じ） */
     hr {
         margin-top: 0.5rem !important;
         margin-bottom: 1rem !important;
-    }
-    /* 3. st.write() や トグルスイッチ周りの無駄な段落マージンを消す */
-    .stMarkdown p {
-        margin-bottom: 0 !important;
-    }
-    /* 4. カラム内の要素の下余白を詰める */
-    [data-testid="column"] > div {
-        margin-bottom: 0 !important;
-        padding-bottom: 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)

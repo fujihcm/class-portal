@@ -1,33 +1,20 @@
 import streamlit as st
 import pandas as pd
-import pydeck as pdk
+import numpy as np
 
-st.title("📊 地図上に3Dグラフを描画する")
+st.title("🗺️ 地図プロットのデモアプリ")
 
-# サンプルデータ（緯度、経度、人口に見立てた数値）
+# 1. サンプルデータ（緯度・経度）を作成（例：東京駅周辺）
 df = pd.DataFrame({
-    'lat': [35.6812, 35.6586, 35.6277],
-    'lon': [139.7671, 139.7454, 139.7786],
-    'value': [500, 800, 300],  # 棒の高さや円の大きさになる数値
-    'name': ['エリアA', 'エリアB', 'エリアC']
+    'latitude': [35.6812, 35.6838, 35.6795],
+    'longitude': [139.7671, 139.7744, 139.7580],
+    '名前': ['東京駅', '日本橋', '有楽町']
 })
 
-# Pydeckを使った地図の設定
-view_state = pdk.ViewState(latitude=35.66, longitude=139.76, zoom=11, pitch=50)
+st.subheader("シンプルマップ")
+# 2. 地図にプロット（これだけで地図が表示されます）
+st.map(df)
 
-layer = pdk.Layer(
-    'ColumnLayer',  # 3Dの棒グラフを描画するレイヤー
-    df,
-    get_position='[lon, lat]',
-    get_elevation='value',  # 数値に応じて棒の高さを変える
-    elevation_scale=2,      # 高さの倍率
-    radius=200,             # 棒の太さ
-    get_fill_color='[255, 165, 0, 200]', # オレンジ色（RGBA）
-    pickable=True
-)
-
-st.pydeck_chart(pdk.Deck(
-    layers=[layer],
-    initial_view_state=view_state,
-    tooltip={"text": "{name}\n数値: {value}"}
-))
+# データの表も一緒に表示
+st.subheader("プロットしたデータ一覧")
+st.dataframe(df)
